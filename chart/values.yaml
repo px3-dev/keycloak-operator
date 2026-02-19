@@ -1,0 +1,43 @@
+# Operator image
+image:
+  repository: quay.io/keycloak/keycloak-operator
+  # Defaults to appVersion
+  tag: ""
+  pullPolicy: IfNotPresent
+
+# Keycloak server image used by the operator when creating instances.
+# The operator injects this as RELATED_IMAGE_KEYCLOAK.
+keycloakImage:
+  repository: quay.io/keycloak/keycloak
+  # Defaults to appVersion
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+replicas: 1
+
+resources:
+  requests:
+    cpu: 300m
+    memory: 450Mi
+  limits:
+    cpu: 700m
+    memory: 450Mi
+
+serviceAccount:
+  create: true
+  annotations: {}
+  # If not set and create is true, a name is generated using the fullname template.
+  name: ""
+
+service:
+  type: ClusterIP
+  port: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAnnotations: {}
+podLabels: {}

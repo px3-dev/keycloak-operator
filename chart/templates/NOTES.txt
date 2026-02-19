@@ -1,0 +1,18 @@
+Keycloak Operator {{ .Chart.AppVersion }} has been installed.
+
+The operator is watching namespace {{ .Release.Namespace }} for Keycloak and KeycloakRealmImport resources.
+
+To create a Keycloak instance, apply a Keycloak CR:
+
+  kubectl apply -n {{ .Release.Namespace }} -f - <<EOF
+  apiVersion: k8s.keycloak.org/v2alpha1
+  kind: Keycloak
+  metadata:
+    name: my-keycloak
+  spec:
+    instances: 1
+    hostname:
+      hostname: my-keycloak.example.com
+    http:
+      tlsSecret: my-tls-secret
+  EOF
