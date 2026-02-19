@@ -28,6 +28,7 @@ jobs:
         run: |
           mkdir -p .deploy
           helm package chart -d .deploy
+          cp pages/index.html .deploy/index.html
 
       - name: Build repo index
         run: |
