@@ -4,37 +4,30 @@ on:
   push:
     branches: [main]
     paths:
-      - "chart/Chart.yaml"
+      - "chart/**" # Watches for any changes in the chart folder
 
 jobs:
   release:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pages: write
+      contents: write # Needed to create GitHub Releases
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: azure/setup-helm@v4
-
-      - name: Package chart
+      - name: Configure Git
         run: |
-          mkdir -p .deploy
-          helm package chart -d .deploy
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - name: Update repo index
-        run: |
-          if git show origin/gh-pages:index.yaml > .deploy/existing-index.yaml 2>/dev/null; then
-            helm repo index .deploy --url https://px3-dev.github.io/keycloak-operator --merge .deploy/existing-index.yaml
-          else
-            helm repo index .deploy --url https://px3-dev.github.io/keycloak-operator
-          fi
+      - name: Install Helm
+        uses: azure/setup-helm@v4
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Run Chart Releaser
+        uses: helm/chart-releaser-action@v1.7.0
         with:
-          github_token: ${{ github.token }}
-          publish_dir: .deploy
-          keep_files: true
+          charts_dir: . # Point to the directory containing your 'chart' folder
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
