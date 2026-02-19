@@ -3,76 +3,232 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>keycloak-operator — Helm Chart</title>
+  <title>keycloak-operator — Helm Chart Repository</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Syne', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            amber: {
+              350: '#f5c542',
+            }
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    @keyframes fade-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-in { animation: fade-in 0.5s ease-out both; }
-    .animate-in-delay { animation: fade-in 0.5s ease-out 0.15s both; }
-    .animate-in-delay-2 { animation: fade-in 0.5s ease-out 0.3s both; }
+    /* Dot grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(245,197,66,0.06) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Radial glow behind hero */
+    .hero-glow {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: radial-gradient(circle, rgba(245,197,66,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Noise texture overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Entrance animations */
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fade-line {
+      from { opacity: 0; transform: scaleX(0); }
+      to { opacity: 1; transform: scaleX(1); }
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
+      50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+    }
+    .rise { animation: rise 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+    .rise-1 { animation-delay: 0.05s; }
+    .rise-2 { animation-delay: 0.15s; }
+    .rise-3 { animation-delay: 0.25s; }
+    .rise-4 { animation-delay: 0.35s; }
+    .rise-5 { animation-delay: 0.45s; }
+    .rise-6 { animation-delay: 0.55s; }
+    .divider { animation: fade-line 0.8s cubic-bezier(0.16,1,0.3,1) 0.2s both; transform-origin: left; }
+
+    /* Code block hover lift */
+    .code-panel {
+      transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease;
+    }
+    .code-panel:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px -8px rgba(245,197,66,0.08);
+    }
+
+    /* Copy button */
+    .copy-btn {
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    .code-panel:hover .copy-btn {
+      opacity: 1;
+    }
+
+    /* Link underline effect */
+    .link-hover {
+      position: relative;
+    }
+    .link-hover::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: currentColor;
+      transition: width 0.25s cubic-bezier(0.16,1,0.3,1);
+    }
+    .link-hover:hover::after {
+      width: 100%;
+    }
   </style>
 </head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen flex items-center justify-center px-4">
-  <div class="max-w-2xl w-full py-16">
-    <div class="animate-in">
-      <div class="flex items-center gap-3 mb-2">
-        <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+<body class="bg-[#0a0a0a] text-zinc-100 min-h-screen flex items-center justify-center px-6 relative overflow-x-hidden">
+  <main class="max-w-2xl w-full py-20 relative z-10">
+    <div class="hero-glow"></div>
+
+    <!-- Status badge -->
+    <div class="rise rise-1 mb-10">
+      <span class="inline-flex items-center gap-2 text-xs font-mono text-zinc-500 border border-zinc-800 rounded-full px-3 py-1.5 bg-zinc-900/50 backdrop-blur-sm">
+        <span class="w-2 h-2 rounded-full bg-green-500" style="animation: pulse-dot 2s ease-in-out infinite;"></span>
+        helm repository
+      </span>
+    </div>
+
+    <!-- Title -->
+    <div class="rise rise-2">
+      <h1 class="font-display font-800 text-5xl tracking-tight leading-none">
+        keycloak<span class="text-amber-350">-</span>operator
+      </h1>
+      <p class="text-zinc-500 text-lg mt-3 font-mono text-sm">
+        Helm chart for the Keycloak Kubernetes operator
+      </p>
+    </div>
+
+    <!-- Divider -->
+    <div class="divider h-px bg-gradient-to-r from-amber-350/40 via-amber-350/10 to-transparent mt-10 mb-10"></div>
+
+    <!-- Quick start -->
+    <div class="rise rise-3">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-[11px] font-mono font-medium uppercase tracking-[0.2em] text-amber-350/70">Quick start</h2>
+      </div>
+      <div class="code-panel relative bg-zinc-900/60 border border-zinc-800/80 rounded-lg p-5 backdrop-blur-sm">
+        <button onclick="copyCode(this)" class="copy-btn absolute top-3 right-3 text-zinc-600 hover:text-amber-350 transition-colors p-1.5 rounded-md hover:bg-zinc-800/50" title="Copy">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
           </svg>
-        </div>
-        <h1 class="text-3xl font-bold tracking-tight">keycloak-operator</h1>
-      </div>
-      <p class="text-zinc-400 text-lg mt-1">Helm chart for the Keycloak Kubernetes operator</p>
-    </div>
+        </button>
+        <pre class="text-[13px] font-mono leading-relaxed overflow-x-auto"><code><span class="text-zinc-600"># add the repo</span>
+<span class="text-zinc-400">helm</span> <span class="text-amber-350">repo add</span> px3-dev https://px3-dev.github.io/keycloak-operator
 
-    <div class="mt-10 space-y-4 animate-in-delay">
-      <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-500">Quick start</h2>
-      <div class="relative group">
-        <pre class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 text-sm font-mono text-cyan-300 overflow-x-auto"><span class="text-zinc-500"># Add the repo</span>
-helm repo add px3-dev https://px3-dev.github.io/keycloak-operator
-
-<span class="text-zinc-500"># Install</span>
-helm install keycloak-operator px3-dev/keycloak-operator</pre>
+<span class="text-zinc-600"># install</span>
+<span class="text-zinc-400">helm</span> <span class="text-amber-350">install</span> keycloak-operator px3-dev/keycloak-operator</code></pre>
       </div>
     </div>
 
-    <div class="mt-8 space-y-4 animate-in-delay">
-      <h2 class="text-xs font-semibold uppercase tracking-widest text-zinc-500">Mirror images</h2>
-      <div class="relative group">
-        <pre class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 text-sm font-mono text-cyan-300 overflow-x-auto">helm install keycloak-operator px3-dev/keycloak-operator \
-  <span class="text-zinc-400">--set</span> image.repository=mirror.example.com/keycloak/keycloak-operator \
-  <span class="text-zinc-400">--set</span> keycloakImage.repository=mirror.example.com/keycloak/keycloak</pre>
+    <!-- Mirror -->
+    <div class="rise rise-4 mt-6">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-[11px] font-mono font-medium uppercase tracking-[0.2em] text-amber-350/70">Mirror images</h2>
+      </div>
+      <div class="code-panel relative bg-zinc-900/60 border border-zinc-800/80 rounded-lg p-5 backdrop-blur-sm">
+        <button onclick="copyCode(this)" class="copy-btn absolute top-3 right-3 text-zinc-600 hover:text-amber-350 transition-colors p-1.5 rounded-md hover:bg-zinc-800/50" title="Copy">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+          </svg>
+        </button>
+        <pre class="text-[13px] font-mono leading-relaxed overflow-x-auto"><code><span class="text-zinc-400">helm</span> <span class="text-amber-350">install</span> keycloak-operator px3-dev/keycloak-operator \
+  <span class="text-zinc-500">--set</span> image.repository=<span class="text-zinc-300">mirror.example.com/keycloak/keycloak-operator</span> \
+  <span class="text-zinc-500">--set</span> keycloakImage.repository=<span class="text-zinc-300">mirror.example.com/keycloak/keycloak</span></code></pre>
       </div>
     </div>
 
-    <div class="mt-12 flex items-center gap-6 animate-in-delay-2">
+    <!-- Divider -->
+    <div class="h-px bg-zinc-800/50 mt-12 mb-8 rise rise-5"></div>
+
+    <!-- Links -->
+    <div class="rise rise-5 flex items-center gap-8">
       <a href="https://github.com/px3-dev/keycloak-operator"
-         class="inline-flex items-center gap-2 text-sm font-medium text-zinc-300 hover:text-white transition-colors">
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+         class="link-hover inline-flex items-center gap-2.5 text-sm font-mono text-zinc-400 hover:text-amber-350 transition-colors">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
         </svg>
-        GitHub
+        source
       </a>
       <a href="https://www.keycloak.org/operator/installation"
-         class="inline-flex items-center gap-2 text-sm font-medium text-zinc-300 hover:text-white transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+         class="link-hover inline-flex items-center gap-2.5 text-sm font-mono text-zinc-400 hover:text-amber-350 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
         </svg>
-        Docs
+        docs
       </a>
       <a href="https://helm.sh"
-         class="inline-flex items-center gap-2 text-sm font-medium text-zinc-300 hover:text-white transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+         class="link-hover inline-flex items-center gap-2.5 text-sm font-mono text-zinc-400 hover:text-amber-350 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/>
         </svg>
-        Helm
+        helm
       </a>
     </div>
 
-    <p class="mt-12 text-xs text-zinc-600 animate-in-delay-2">
-      Maintained by <a href="https://github.com/px3-dev" class="text-zinc-500 hover:text-zinc-300 transition-colors">px3-dev</a>
+    <!-- Footer -->
+    <p class="rise rise-6 mt-14 text-[11px] font-mono text-zinc-700">
+      maintained by <a href="https://github.com/px3-dev" class="text-zinc-600 hover:text-amber-350 transition-colors">px3-dev</a>
     </p>
-  </div>
+  </main>
+
+  <script>
+    function copyCode(btn) {
+      const code = btn.closest('.code-panel').querySelector('code').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const svg = btn.querySelector('svg');
+        const original = svg.innerHTML;
+        svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>';
+        btn.classList.add('text-green-500');
+        setTimeout(() => {
+          svg.innerHTML = original;
+          btn.classList.remove('text-green-500');
+        }, 1500);
+      });
+    }
+  </script>
 </body>
 </html>
