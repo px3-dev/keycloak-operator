@@ -1,0 +1,40 @@
+name: Release Chart
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "chart/Chart.yaml"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: azure/setup-helm@v4
+
+      - name: Package chart
+        run: |
+          mkdir -p .deploy
+          helm package chart -d .deploy
+
+      - name: Update repo index
+        run: |
+          if git show origin/gh-pages:index.yaml > .deploy/existing-index.yaml 2>/dev/null; then
+            helm repo index .deploy --url https://px3-dev.github.io/keycloak-operator --merge .deploy/existing-index.yaml
+          else
+            helm repo index .deploy --url https://px3-dev.github.io/keycloak-operator
+          fi
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ github.token }}
+          publish_dir: .deploy
+          keep_files: true

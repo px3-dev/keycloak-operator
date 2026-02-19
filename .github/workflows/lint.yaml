@@ -1,0 +1,31 @@
+name: Lint
+
+on:
+  pull_request:
+    paths:
+      - "chart/**"
+      - "cmd/**"
+      - "internal/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: azure/setup-helm@v4
+
+      - name: Go build
+        run: go build ./cmd/generate
+
+      - name: Helm lint
+        run: helm lint chart
+
+      - name: Helm template
+        run: helm template keycloak-operator chart > /dev/null
