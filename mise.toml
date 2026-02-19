@@ -1,3 +1,36 @@
 [tools]
 go = "1.24"
 helm = "4"
+
+[tasks.generate]
+description = "Download upstream manifests and generate Helm chart"
+usage = "generate <version>"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+VERSION="${1:?Usage: mise run generate <version>}"
+mkdir -p bin
+
+echo "Downloading upstream manifests for ${VERSION}..."
+curl -sfL -o bin/kubernetes.yml \
+  "https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/${VERSION}/kubernetes/kubernetes.yml"
+curl -sfL -o bin/keycloaks.k8s.keycloak.org-v1.yml \
+  "https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/${VERSION}/kubernetes/keycloaks.k8s.keycloak.org-v1.yml"
+curl -sfL -o bin/keycloakrealmimports.k8s.keycloak.org-v1.yml \
+  "https://raw.githubusercontent.com/keycloak/keycloak-k8s-resources/${VERSION}/kubernetes/keycloakrealmimports.k8s.keycloak.org-v1.yml"
+
+echo "Generating Helm chart..."
+go run ./cmd/generate \
+  --manifest bin/kubernetes.yml \
+  --crd bin/keycloaks.k8s.keycloak.org-v1.yml \
+  --crd bin/keycloakrealmimports.k8s.keycloak.org-v1.yml \
+  --output chart
+
+echo "Linting..."
+helm lint chart
+"""
+
+[tasks.lint]
+description = "Lint the Helm chart"
+run = "helm lint chart"
